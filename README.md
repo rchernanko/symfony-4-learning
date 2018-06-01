@@ -54,3 +54,5 @@
 - Few things I've noticed that are different to previous versions of symfony (I think so anyway).
     1) As well as the composer.json and composer.lock files changing, there is now a symfony.lock file. What is this? How is it used?
     2) config > bundles is automatically updated with the new library I've installed
+
+- Get more comfortable with the annotations library - https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html

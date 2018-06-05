@@ -42,7 +42,7 @@
 
 - Interestingly, this require of 'annotations' actually installs 'sensio/framework-extra-bundle'...more on that later
 - Next, I will comment out the route I added above (in the config > routes.yaml file)
-- And then I'll add the @Route annotation in my PlayersController.
+- And then I'll add the @Route annotation in my PlayersController and try to load the page again.
 - Boom, works
 
 ### Flex aliases and recipes
@@ -52,7 +52,7 @@
 ```$ composer require sec-checker --dev```
 
 - Of course, 'sec-checker' does not follow the standard pattern of installing a library with composer.
-- To install a package with composer, it would normally be something like... 'composer require sensiolabs/security-checker'
+- Normally, it would look something like... 'composer require sensiolabs/security-checker'
 - So how is 'sec-checker' working then?
 
 - If we take a look in the composer.json, within the 'require' section there is a library called 'symfony/flex'. 
@@ -90,8 +90,7 @@
     - So when we next run a composer install, when it finishes, it runs the security-check script automatically.
     - Note - flex is also clever enough to uninstall recipe(s) when you remove a package
 
-- Where do the recipes live? All in github. Go back to symfony.sh and click on the 'Recipe' icon. This takes you directly to the codebase
-
+- Where do the recipes live? All in github. Go back to symfony.sh and click on the 'Recipe' icon for a given package.
 
 ### Things to follow up on:
 

@@ -45,7 +45,7 @@
 - And then I'll add the @Route annotation in my PlayersController.
 - Boom, works
 
-### Flex aliases
+### Flex aliases and recipes
 
 - We are now going to install a new library, not so much to use it in here, but to demonstrate the recipe system:
 

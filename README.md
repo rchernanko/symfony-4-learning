@@ -99,6 +99,15 @@
 - Ran a 'composer require twig' and several files were added / modified. One that was modified was 'config>bundles.php'
 - Bundles are the plugin system for symfony. Whenever we install a third party bundle, flex adds it into 'config>bundles.php'
 so that it is used automatically
+- Created a very basic TwigDemoController
+
+### Profiler (aka the web debug toolbar)
+
+- Ran a 'composer require profiler --dev' and a few things were installed
+- Run the web server and go to 'http://127.0.0.1:8000/twig/demo' (which renders an HTML template)
+- When the page loads, I can see a little toolbar at the bottom of the page
+- This web debug toolbar / profiler is automatically injected at the bottom of any valid HTML page during development
+- Up to 1.30 mins (video 7)
 
 ### Things to follow up on:
 

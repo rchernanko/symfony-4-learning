@@ -92,11 +92,19 @@
 
 - Where do the recipes live? All in github. Go back to symfony.sh and click on the 'Recipe' icon for a given package.
 
-### Things to follow up on:
+### Twig tutorials
 
-- Few things I've noticed that are different to previous versions of symfony (I think so anyway).
-    1) config > bundles is automatically updated with the new library I've installed
+- Not going to make too many notes on this.
+- Twig is used to return HTML
+- Ran a 'composer require twig' and several files were added / modified. One that was modified was 'config>bundles.php'
+- Bundles are the plugin system for symfony. Whenever we install a third party bundle, flex adds it into 'config>bundles.php'
+so that it is used automatically
+
+### Things to follow up on:
 
 - Get more comfortable with the annotations library - https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html
 
-- Check out the sec-check (sensiolabs/security-checker) plugin.
+### Libraries to become more familiar with
+
+- sec-check (sensiolabs/security-checker) plugin.
+- twig

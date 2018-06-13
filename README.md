@@ -124,6 +124,43 @@ so that it is used automatically
 - This command removes the 'debug-pack' from the composer files but you can then see that the debug-pack's 6 packages have been 
  added to the composer files. So now if you want to customise the version of one of those packages, you can. 
 
+### Assets: CSS & JavaScript
+
+- Not making notes on this.
+
+### Route names
+
+- Running a ```bin/console debug:router``` will give you a list of all the routes in your application:
+
+```
+ -------------------------- -------- -------- ------ ----------------------------------- 
+  Name                       Method   Scheme   Host   Path                               
+ -------------------------- -------- -------- ------ ----------------------------------- 
+  app_players_getplayer      ANY      ANY      ANY    /players/{name}                    
+  app_twigdemo_gettwigdemo   ANY      ANY      ANY    /twig/demo                         
+  _twig_error_test           ANY      ANY      ANY    /_error/{code}.{_format}           
+  _wdt                       ANY      ANY      ANY    /_wdt/{token}                      
+  _profiler_home             ANY      ANY      ANY    /_profiler/                        
+  _profiler_search           ANY      ANY      ANY    /_profiler/search                  
+  _profiler_search_bar       ANY      ANY      ANY    /_profiler/search_bar              
+  _profiler_phpinfo          ANY      ANY      ANY    /_profiler/phpinfo                 
+  _profiler_search_results   ANY      ANY      ANY    /_profiler/{token}/search/results  
+  _profiler_open_file        ANY      ANY      ANY    /_profiler/open                    
+  _profiler                  ANY      ANY      ANY    /_profiler/{token}                 
+  _profiler_router           ANY      ANY      ANY    /_profiler/{token}/router          
+  _profiler_exception        ANY      ANY      ANY    /_profiler/{token}/exception       
+  _profiler_exception_css    ANY      ANY      ANY    /_profiler/{token}/exception.css   
+ -------------------------- -------- -------- ------ ----------------------------------- 
+```
+
+- The 2 routes I've created so far are at the top (along with a load of other profiler ones)
+- Each route has an internal name which is never shown to the user
+- These exist so that we can refer to them in our code
+- e.g. app_players_getplayer and app_twigdemo_gettwigdemo
+- In the 'generating urls' video, he adds the internal name to the twig template. ```href="{{ path('app_players_getplayer') }}"```
+- For annotation routes, the internal name is created automatically for us
+- However, if we want to configure the name ourselves, we can add a 'name' key in the annotation (I've done so in the PlayersController)
+- The internal name now changes from app_players_getplayer to app_players
 
 ### Libraries to become more familiar with
 

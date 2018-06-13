@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 class PlayersController
 {
     /**
-     * @Route("/players/{name}")
+     * @Route("/players/{name}", name="app_players")
      *
      * @return Response
      */

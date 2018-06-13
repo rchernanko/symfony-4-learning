@@ -119,15 +119,14 @@ so that it is used automatically
 - Installs one 'pack' that consists of a composer.json (which will then in turn install another e.g. 5 packages)
 - An example - https://packagist.org/packages/symfony/debug-pack (https://github.com/symfony/debug-pack)
 - But packs have a downside too. If you want to control the version of one of the 5 packages, how do you do this? 
-Well you can't... And what if you only want 4 of the 5 packages in the pack. Again, no way to control this as of yet
-- To remove the pack, ```$ composer unpack debug```
+- The only way to date is to 'unpack' the pack and then configure each package separately
+- To do this, run ```$ composer unpack debug```
+- This command removes the 'debug-pack' from the composer files but you can then see that the debug-pack's 6 packages have been 
+ added to the composer files. So now if you want to customise the version of one of those packages, you can. 
 
-
-### Things to follow up on:
-
-- Get more comfortable with the annotations library - https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html
 
 ### Libraries to become more familiar with
 
 - sec-check (sensiolabs/security-checker) plugin.
 - twig
+- annotations (https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html)

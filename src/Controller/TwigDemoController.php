@@ -18,6 +18,8 @@ class TwigDemoController extends AbstractController
      */
     public function getTwigDemoAction()
     {
+        dump($this);
+
         return $this->render('base.html.twig');
     }
 

@@ -105,9 +105,12 @@ so that it is used automatically
 
 - Ran a 'composer require profiler --dev' and a few things were installed
 - Run the web server and go to 'http://127.0.0.1:8000/twig/demo' (which renders an HTML template)
-- When the page loads, I can see a little toolbar at the bottom of the page
+- When the page loads, I can see a little toolbar at the bottom of the page - each icon in the toolbar is packed with info
+- When you click on one of the icons, you can go into it even further and view more detailed analysis
 - This web debug toolbar / profiler is automatically injected at the bottom of any valid HTML page during development
-- Up to 1.30 mins (video 7)
+- The profiler also installed symfony's 'var dumper' component
+- So now, instead of using var_dump during development, you can instead use dump(). 
+- Pretty nice, adds coloured output (I've added to the twig demo controller + also in the base.html.twig template)
 
 ### Things to follow up on:
 

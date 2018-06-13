@@ -162,6 +162,8 @@ so that it is used automatically
 - However, if we want to configure the name ourselves, we can add a 'name' key in the annotation (I've done so in the PlayersController)
 - The internal name now changes from app_players_getplayer to app_players
 
+- UP TO 11-javascript.mp4
+
 ### Libraries to become more familiar with
 
 - sec-check (sensiolabs/security-checker) plugin.

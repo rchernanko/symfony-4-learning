@@ -112,6 +112,17 @@ so that it is used automatically
 - So now, instead of using var_dump during development, you can instead use dump(). 
 - Pretty nice, adds coloured output (I've added to the twig demo controller + also in the base.html.twig template)
 
+### Debugging and Packs
+
+- Symfony has even more debugging tools
+- Easiest way to get all of them ```$ composer require debug --dev```
+- Installs one 'pack' that consists of a composer.json (which will then in turn install another e.g. 5 packages)
+- An example - https://packagist.org/packages/symfony/debug-pack (https://github.com/symfony/debug-pack)
+- But packs have a downside too. If you want to control the version of one of the 5 packages, how do you do this? 
+Well you can't... And what if you only want 4 of the 5 packages in the pack. Again, no way to control this as of yet
+- To remove the pack, ```$ composer unpack debug```
+
+
 ### Things to follow up on:
 
 - Get more comfortable with the annotations library - https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html

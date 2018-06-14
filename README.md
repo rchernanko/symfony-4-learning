@@ -162,10 +162,40 @@ so that it is used automatically
 - However, if we want to configure the name ourselves, we can add a 'name' key in the annotation (I've done so in the PlayersController)
 - The internal name now changes from app_players_getplayer to app_players
 
-- UP TO 11-javascript.mp4
+### JavaScript API video
+
+- Using the PHP annotations, you can also specify the method type of a route, e.g. GET, POST etc.
+- Take a look in PlayersController for an example - getPlayerAction - I've added a GET method in the annotation
+- So now, when I run a ```bin/console debug:router```, I see that the Method column now has GET for that particular route
+
+```
+ -------------------------- -------- -------- ------ ----------------------------------- 
+  Name                       Method   Scheme   Host   Path                               
+ -------------------------- -------- -------- ------ ----------------------------------- 
+  app_players                GET      ANY      ANY    /players/{name}                    
+  app_twigdemo_gettwigdemo   ANY      ANY      ANY    /twig/demo                         
+  _twig_error_test           ANY      ANY      ANY    /_error/{code}.{_format}           
+  _wdt                       ANY      ANY      ANY    /_wdt/{token}                      
+  _profiler_home             ANY      ANY      ANY    /_profiler/                        
+  _profiler_search           ANY      ANY      ANY    /_profiler/search                  
+  _profiler_search_bar       ANY      ANY      ANY    /_profiler/search_bar              
+  _profiler_phpinfo          ANY      ANY      ANY    /_profiler/phpinfo                 
+  _profiler_search_results   ANY      ANY      ANY    /_profiler/{token}/search/results  
+  _profiler_open_file        ANY      ANY      ANY    /_profiler/open                    
+  _profiler                  ANY      ANY      ANY    /_profiler/{token}                 
+  _profiler_router           ANY      ANY      ANY    /_profiler/{token}/router          
+  _profiler_exception        ANY      ANY      ANY    /_profiler/{token}/exception       
+  _profiler_exception_css    ANY      ANY      ANY    /_profiler/{token}/exception.css   
+ -------------------------- -------- -------- ------ ----------------------------------- 
+```
+
+### Services
+
+
 
 ### Libraries to become more familiar with
 
 - sec-check (sensiolabs/security-checker) plugin.
 - twig
-- annotations (https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html)
+- annotations (https://symfony.com/doc/master/bundles/SensioFrameworkExtraBundle/index.html) - other than 'name' and 'method',
+what can i do with the other options?

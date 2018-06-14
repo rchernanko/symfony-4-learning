@@ -191,7 +191,24 @@ so that it is used automatically
 
 ### Services
 
+- Going to start by looking at logging.
+- Run ```tail -f var/log/dev.log```
+- Then, when I call the getPlayerAction route, 'http://127.0.0.1:8000/players/harrykane'..., some logs are added in the console (and also to var/log/dev.log):
 
+```
+[2018-06-14 07:51:51] request.INFO: Matched route "app_players". {"route":"app_players","route_parameters":{"_controller":"App\\Controller\\PlayersController::getPlayerAction","name":"harrykane","_route":"app_players"},"request_uri":"http://127.0.0.1:8000/players/harrykane","method":"GET"} []
+```
+
+- So somewhere, symfony has some magic (out of the box) that logs some info when we call a route.
+- Next, let's add some of our own custom logging.
+- So, I have added a LoggerInterface as an argument into the 'getPlayerAction' controller function (different to symfony 3 I think), 
+and then logged some more information. When I called the route again, I saw the below in the logs:
+
+```
+[2018-06-14 07:59:59] app.INFO: Someone is calling the getPlayerAction endpoint [] []
+```
+
+- Up to 2 mins 50 secs
 
 ### Libraries to become more familiar with
 

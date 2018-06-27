@@ -208,7 +208,89 @@ and then logged some more information. When I called the route again, I saw the 
 [2018-06-14 07:59:59] app.INFO: Someone is calling the getPlayerAction endpoint [] []
 ```
 
-- Up to 2 mins 50 secs
+- Before symfony executes our controller, it looks at each argument. 
+- So for '$logger', symfony looks at the type hint (LoggerInterface) and realises that we want symfony to pass us a logger object.
+- The order of the arguments does not matter.
+- **This concept is known as autowiring.**
+- So if you need a service object in the controller, you just need to know the correct type hint to use
+- So how do I know which services are available to me then?
+- Run:
+
+```
+bin/console debug:autowiring
+```
+
+- The following is outputted:
+
+```
+Autowirable Services
+====================
+
+ The following classes & interfaces can be used as type-hints when autowiring:
+
+ --------------------------------------------------------------------------
+  App\Controller\PlayersController
+  App\Controller\TwigDemoController
+  App\Services\PlayerService
+  Doctrine\Common\Annotations\Reader
+      alias to annotations.cached_reader
+  EasyCorp\EasyLog\EasyLogHandler
+  Psr\Cache\CacheItemPoolInterface
+      alias to cache.app
+  Psr\Container\ContainerInterface
+      alias to service_container
+  Psr\Log\LoggerInterface
+      alias to monolog.logger
+  SensioLabs\Security\Command\SecurityCheckerCommand
+  SensioLabs\Security\SecurityChecker
+  SessionHandlerInterface
+      alias to session.handler
+  Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+  Symfony\Bundle\FrameworkBundle\Controller\TemplateController
+  Symfony\Component\Cache\Adapter\AdapterInterface
+      alias to cache.app
+  Symfony\Component\DependencyInjection\ContainerInterface
+      alias to service_container
+  Symfony\Component\EventDispatcher\EventDispatcherInterface
+      alias to debug.event_dispatcher
+  Symfony\Component\Filesystem\Filesystem
+      alias to filesystem
+  Symfony\Component\HttpFoundation\RequestStack
+      alias to request_stack
+  Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface
+      alias to session.flash_bag
+  Symfony\Component\HttpFoundation\Session\SessionInterface
+      alias to session
+  Symfony\Component\HttpFoundation\Session\Storage\SessionStorageInterface
+      alias to session.storage.native
+  Symfony\Component\HttpKernel\Config\FileLocator
+      alias to file_locator
+  Symfony\Component\HttpKernel\Debug\FileLinkFormatter
+      alias to debug.file_link_formatter
+  Symfony\Component\HttpKernel\HttpKernelInterface
+      alias to http_kernel
+  Symfony\Component\HttpKernel\KernelInterface
+      alias to kernel
+  Symfony\Component\Routing\Generator\UrlGeneratorInterface
+      alias to router.default
+  Symfony\Component\Routing\Matcher\UrlMatcherInterface
+      alias to router.default
+  Symfony\Component\Routing\RequestContext
+      alias to router.request_context
+  Symfony\Component\Routing\RequestContextAwareInterface
+      alias to router.default
+  Symfony\Component\Routing\RouterInterface
+      alias to router.default
+  Symfony\Component\Stopwatch\Stopwatch
+      alias to debug.stopwatch
+  Twig\Environment
+      alias to twig
+  Twig_Environment
+      alias to twig
+ --------------------------------------------------------------------------
+```
+
+- Along with a load of default services (e.g. LoggerInterface, UrlMatcherInterface), I can also access PlayerService too (my own custom service class)
 
 ### Libraries to become more familiar with
 

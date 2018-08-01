@@ -1,8 +1,13 @@
-### Symfony 4 learning:
+### Symfony 4 learning - Different series:
 
-- Watching https://knpuniversity.com/screencast/symfony
+- First series is https://knpuniversity.com/screencast/symfony
+- Second series is https://knpuniversity.com/screencast/symfony-fundamentals
 
-### Setup project
+### FIRST TUTORIAL SERIES
+- Stellar Development with Symfony 4
+- https://knpuniversity.com/screencast/symfony
+
+### 1) Setup project
 
 - To create the skeleton symfony framework:
 
@@ -16,7 +21,7 @@
 
 ```$ php -S 127.0.0.1:8000 -t public```
 
-### Create a route via routes.yaml
+### 2) Create a route via routes.yaml
 
 - Went to config > routes.yaml and configured:
 
@@ -34,7 +39,7 @@
 - There's probably a nicer way to configure routing, without having to use the config > routes.yaml.
 - That is by using annotations
 
-### Create a route with annotations
+### 3) Create a route with annotations
 
 - First, install it:
 
@@ -45,7 +50,7 @@
 - And then I'll add the @Route annotation in my PlayersController and try to load the page again.
 - Boom, works
 
-### Flex aliases and recipes
+### 4) Flex aliases and recipes
 
 - We are now going to install a new library, not so much to use it in here, but to demonstrate the recipe system:
 
@@ -92,7 +97,7 @@
 
 - Where do the recipes live? All in github. Go back to symfony.sh and click on the 'Recipe' icon for a given package.
 
-### Twig tutorials
+### 5) Twig tutorials
 
 - Not going to make too many notes on this.
 - Twig is used to return HTML
@@ -101,7 +106,7 @@
 so that it is used automatically
 - Created a very basic TwigDemoController
 
-### Profiler (aka the web debug toolbar)
+### 6) Profiler (aka the web debug toolbar)
 
 - Ran a 'composer require profiler --dev' and a few things were installed
 - Run the web server and go to 'http://127.0.0.1:8000/twig/demo' (which renders an HTML template)
@@ -112,7 +117,7 @@ so that it is used automatically
 - So now, instead of using var_dump during development, you can instead use dump(). 
 - Pretty nice, adds coloured output (I've added to the twig demo controller + also in the base.html.twig template)
 
-### Debugging and Packs
+### 7) Debugging and Packs
 
 - Symfony has even more debugging tools
 - Easiest way to get all of them ```$ composer require debug --dev```
@@ -124,11 +129,11 @@ so that it is used automatically
 - This command removes the 'debug-pack' from the composer files but you can then see that the debug-pack's 6 packages have been 
  added to the composer files. So now if you want to customise the version of one of those packages, you can. 
 
-### Assets: CSS & JavaScript
+### 8) Assets: CSS & JavaScript
 
 - Not making notes on this.
 
-### Route names
+### 9) Route names
 
 - Running a ```bin/console debug:router``` will give you a list of all the routes in your application:
 
@@ -162,7 +167,7 @@ so that it is used automatically
 - However, if we want to configure the name ourselves, we can add a 'name' key in the annotation (I've done so in the PlayersController)
 - The internal name now changes from app_players_getplayer to app_players
 
-### JavaScript API video
+### 10) JavaScript API video
 
 - Using the PHP annotations, you can also specify the method type of a route, e.g. GET, POST etc.
 - Take a look in PlayersController for an example - getPlayerAction - I've added a GET method in the annotation
@@ -189,7 +194,7 @@ so that it is used automatically
  -------------------------- -------- -------- ------ ----------------------------------- 
 ```
 
-### Services
+### 11) Services
 
 - Going to start by looking at logging.
 - Run ```tail -f var/log/dev.log```
@@ -291,6 +296,35 @@ Autowirable Services
 ```
 
 - Along with a load of default services (e.g. LoggerInterface, UrlMatcherInterface), I can also access PlayerService too (my own custom service class)
+
+
+### SECOND TUTORIAL SERIES
+- Symfony 4 Fundamentals - Services, Config & Environments
+- https://knpuniversity.com/screencast/symfony-fundamentals
+
+### 1) Bundles give you services
+
+- A service is an object that does work.
+- When we do an e.g. LoggerInterface in the getPlayerAction function...where does it come from? Where do the service objects come from?
+- Every service is stored in the container
+- And what puts these services into the container? The answer is bundles (check out the config>bundles.php)
+- Bundles are symfony's plugin system
+- Symfony is really nothing more than a collection of services
+- Bundles are what actually prepare those service objects and put them into the container
+- Bundles have 1 main job - they give you services
+
+### 2) KNP Markdown bundle and its services
+
+- In the videos, he loads a page
+- His goal - he wants the article body to be processed through markdown
+- He installs the KNP markdown bundle:
+
+```
+composer require knplabs/knp-markdown-bundle
+```
+
+- UP to 30 seconds in
+
 
 ### Libraries to become more familiar with
 

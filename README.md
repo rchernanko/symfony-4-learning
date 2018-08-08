@@ -323,7 +323,139 @@ Autowirable Services
 composer require knplabs/knp-markdown-bundle
 ```
 
-- UP to 30 seconds in
+(At this point, I switched from watching the videos to reading the documentation / transcript that came with the course)
+
+- This automatically adds a row within bundles.php
+
+```
+Knp\Bundle\MarkdownBundle\KnpMarkdownBundle::class => ['all' => true]
+```
+
+- Then when I run a...
+
+```bin/console debug:autowiring```
+
+...I can see 2 new services available to me:
+
+```
+  Knp\Bundle\MarkdownBundle\MarkdownParserInterface                         
+      alias to markdown.parser.max                                          
+  Michelf\MarkdownInterface                                                 
+      alias to markdown.parser.max   
+```
+
+- He then injects the 'MarkdownInterface' into a controller - autowiring
+- Things to take away from this section:
+1. Everything in Symfony is done by a service
+2. Bundles give us these services... and installing new bundles gives us more services.
+
+### 3) The Cache Service
+
+- Comes with symfony out of the box
+- Run:
+
+```bin/console debug:autowiring```
+
+- We can see:
+
+```
+Psr\Cache\CacheItemPoolInterface                                          
+      alias to cache.app  
+      
+      and further down...
+      
+Symfony\Component\Cache\Adapter\AdapterInterface                          
+      alias to cache.app 
+```
+
+- Both are aliases to cache.app
+- Internally, each service has a unique name, or "id", just like routes. The internal id for Symfony's cache service is 
+cache.app. If you see two entries that are both aliases to the same service, it means that you can use either type 
+hint (for autowiring) to get the exact same object. Both CacheItemPoolInterface and AdapterInterface will cause the 
+exact same object to be passed to you.
+
+- I've created a CacheController to give a little demo...nice and simple :-)
+- Next question - where is it saving the cache files? And more importantly, what if I need to change the cache service 
+to save the cache somewhere else, like Redis? That's coming next...
+
+### 4) Configuring a Bundle
+
+- Every bundle is configurable within yaml files
+- But how do I find out all the configuration options for a bundle (without having to trawl through all the documentation)?
+- Run:
+
+```bin/console config:dump <bundle_name>```
+```bin/console config:dump KNPMardownBundle```
+
+- The below is printed to the console:
+
+```
+# Default configuration for "KnpMarkdownBundle"
+knp_markdown:
+    parser:
+        service:              markdown.parser.max
+    sundown:
+        extensions:
+            fenced_code_blocks:   false
+            no_intra_emphasis:    false
+            tables:               false
+            autolink:             false
+            strikethrough:        false
+            lax_html_blocks:      false
+            space_after_headers:  false
+            superscript:          false
+        render_flags:
+            filter_html:          false
+            no_images:            false
+            no_links:             false
+            no_styles:            false
+            safe_links_only:      false
+            with_toc_data:        false
+            hard_wrap:            false
+            xhtml:                false
+```
+
+- Boom! Say hello to a big YAML example of all of the config options for this bundle. Sometimes, the keys are self-explanatory. 
+But other times - you'll want to cross-reference this with the bundle's docs to find out more. In this case, down 
+below on the docs, it tells us that the bundle ships with a number of different parsers: it looks like it defaults 
+to this "max" parser: fully-featured, but a bit slow.
+
+- Let's try to change to the "light" parser
+- Look in the config/ directory and then packages/ . Create a new file called knp_markdown.yaml. Then, copy the 
+configuration, paste it here and change the service to the one from the docs: markdown.parser.light
+
+```
+knp_markdown:
+  parser:
+    service: markdown.parser.light
+```
+
+- After we've added new config, we must always run a:
+
+```bin/console cache:clear```
+
+- This...is a bummer. Normally, Symfony is smart-enough to rebuild its cache whenever we change a config file. But...
+there's currently a bug in Symfony where it does not notice new config files. So, for now, we need to do this on the 
+rare occasion when we add a new file to config. It should be fixed soon.
+
+- So...what did this config change...actually...do? Well, because the purpose of a bundle is to give us services, 
+the purpose of configuring a bundle is to change how those services behave. That might mean that a service will suddenly 
+use a different class, or that different arguments are passed to a service object. As a user, it doesn't really matter 
+to us: the bundle takes care of the ugly details.
+
+- He does a little bit of magic in the video and can now see the markdown parser as an instance of Light and not Max.
+- I.e. the configuration changes have worked.
+
+- Now: why did I put this in a file named knp_markdown.yaml? Is that important? Actually, no! As we'll learn soon, 
+Symfony automatically loads all files in packages/, and their names are meaningless, technically!
+- The super important part is the root - meaning, non-indented - key: knp_markdown. 
+- Each file in packages/ configures a different bundle. Any configuration under knp_markdown is passed to the 
+KnpMarkdownBundle. Any config under framework configures FrameworkBundle, which is Symfony's one, "core" bundle (see framework.yaml)
+
+- Every bundle has its own set of valid config.
+
+### 5) debug:container & cache config
+
 
 
 ### Libraries to become more familiar with

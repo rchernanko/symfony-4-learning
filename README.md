@@ -456,6 +456,210 @@ KnpMarkdownBundle. Any config under framework configures FrameworkBundle, which 
 
 ### 5) debug:container & cache config
 
+- Remember: all services live inside an object called the container. And each has an internal name, or id.
+- The 'markdown.parser.light' key we have in our knp_markdown.yaml is the id of a service in the container.
+- With this config, we're telling the bundle that when we ask for the Markdown parser e.g. in the controller, 
+it should now pass us the service that has this id.
+
+- Interesting - when we run a...
+
+```bin/console debug:autowiring```
+
+...this is not a full list of all of the services in the container...
+
+- But when we run this...
+
+```bin/console debug:container --show-private```
+
+...this is actually the full list of the many services in the container. 
+
+```
+
+Symfony Container Services
+==========================
+
+ -------------------------------------------------------------------------- ----------------------------------------------------------------------------------------
+  Service ID                                                                 Class name
+ -------------------------------------------------------------------------- ----------------------------------------------------------------------------------------
+  App\Controller\CacheController                                             App\Controller\CacheController
+  App\Controller\PlayersController                                           App\Controller\PlayersController
+  App\Controller\TwigDemoController                                          App\Controller\TwigDemoController
+  App\Services\PlayerService                                                 App\Services\PlayerService
+  Doctrine\Common\Annotations\Reader                                         alias for "annotations.cached_reader"
+  EasyCorp\EasyLog\EasyLogHandler                                            EasyCorp\EasyLog\EasyLogHandler
+  Knp\Bundle\MarkdownBundle\MarkdownParserInterface                          alias for "markdown.parser.light"
+  Michelf\MarkdownInterface                                                  alias for "markdown.parser.light"
+  Psr\Cache\CacheItemPoolInterface                                           alias for "cache.app"
+  Psr\Container\ContainerInterface                                           alias for "service_container"
+  
+  ...
+
+```
+
+- Most of the time, the services you'll actually need to use will be shown after you run:
+
+```bin/console debug:autowiring```
+
+- But you can see EVERYTHING available to you (including the boring internal services that you might not use) after running:
+
+```bin/console debug:container --show-private```
+
+- Big takeaways:
+
+1. There are many services in the container and each has an id.
+2. The services you'll use 99% of the time show up in debug:autowiring and are easy to access.
+
+###Configuring the cache object:
+
+- If we were to var_dump the $cache variable in our CacheController, the below would be printed:
+
+```
+CacheController.php on line 23:
+TraceableAdapter {#674 ▼
+  #pool: FilesystemAdapter {#668 ▼
+    -createCacheItem: Closure {#670 ▶}
+    -mergeByLifetime: Closure {#673 ▶}
+    -namespace: ""
+    -namespaceVersion: ""
+    -versioningIsEnabled: false
+    -deferred: []
+    #maxIdLength: null
+    #logger: Logger {#513 ▶}
+    -directory: "/Users/richardchernanko/Development/symfony-4-learning/var/cache/dev/pools/67C7vxtLAk/"
+    -tmp: null
+  }
+  -calls: []
+}
+``` 
+
+- The $cache object is something called a TraceableAdapter and, inside, a FileSystemAdapter...
+- Our cache is being saved to the filesystem... and we can even see where in var/cache/dev/pools...
+- So... how can we configure the cache service? Of course, the easiest answer is just to Google its docs. But, we don't 
+even need to do that! The cache service is provided by the FrameworkBundle, which is the one bundle that came 
+automatically with our app.
+
+###Debugging your Current Config:
+ 
+- So, first thing, if we run a...
+
+```bin/console config:dump framework```
+
+...this tells gives us all the possible config we could put in the framework bundle configuration file (framework.yaml).
+
+- Now let's run a...
+
+```bin/console debug:config framework```
+
+- Instead of dumping example config, this is our current config.
+- Under cache, there are 6 configured keys:
+ 
+```
+    cache:
+        app: cache.adapter.filesystem
+        system: cache.adapter.system
+        directory: /Users/richardchernanko/Development/symfony-4-learning/var/cache/dev/pools
+        default_redis_provider: 'redis://localhost'
+        default_memcached_provider: 'memcached://localhost'
+        pools: {  }
+```
+
+- But, you won't see all of these in framework.yaml - instead these are the bundle's default values. 
+- And you can see that this app key is set to cache.adapter.filesystem
+
+### Changing to an APCu Cache:
+
+- The docs in framework.yaml tell us that if we want to change the cache system, app is the key we want. 
+- Let's uncomment the last one to set app to use APCu: an in-memory cache that's not as awesome as Redis, but easier to 
+install (i'm not actually going to do it but could do via the below):
+
+```
+    cache:
+        # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
+        app: cache.adapter.apcu
+```
+
+- And just like with markdown, cache.adapter.apcu is a service that already exists in the container.
+- Ok, go back and refresh! Yes! The cache is now using an APCuAdapter internally!
+
+- Very useful - Running ```./bin/console cache:clear``` clears Symfony's internal cache that helps your app run. 
+- But, it purposely does not clear anything that you store in cache. If you want to clear that, run:
+ ```bin/console cache:pool:clear cache.app```.
+
+### 6) Explore! Environments & Config Files
+
+- We know that Symfony is really just a set of routes and a set of services. 
+- And we also know that the files in config/packages configure those services. 
+- But, who loads these files? And what is the importance - if any - of these sub-directories?
+
+- The code that runs our app is like a machine. 
+- The machine always does the same work, but... it needs some configuration in order to do its job. E.g. where to write 
+log files or what the database name and password are.
+- And there's other config too, like whether to log all messages or just errors, or whether to show a big beautiful 
+- exception page - which is great for development - or something aimed at your end-users. 
+- Key point - the behavior of your app can change based on its config.
+- Symfony has an awesome way of handling this called 'environments'. 
+- It has two environments out-of-the-box: dev and prod. 
+- In the dev environment, Symfony uses a set of config that's... well... great for development: big errors, log 
+everything and show me the web debug toolbar. 
+- The prod environment uses a set of config that's optimized for speed, only logs errors, and hides technical info on error pages.
+
+### How Environments Work:
+
+- Let's have a look at public/index.php
+- This is the front controller: a fancy word to mean that it is the first file that's executed for every page. 
+- You don't normally worry about it, but... it's kind of interesting. It's looking for an environment variable called APP_ENV
+- The $env variable is then passed into some Kernel class! 
+- The APP_ENV variable is set in a .env file, and right now it's set to dev.
+- Anyways, the string 'dev' - is being passed into a Kernel class. The question is... what does that do?
+
+### Debugging the Kernel Class:
+
+- That Kernel class is not some core part of Symfony. Nope, it lives right inside our app! 
+- Open src/Kernel.php.
+- Let's look at the registerBundles() function:
+
+```
+    public function registerBundles()
+    {
+        $contents = require $this->getProjectDir().'/config/bundles.php';
+        foreach ($contents as $class => $envs) {
+            if (isset($envs['all']) || isset($envs[$this->environment])) {
+                yield new $class();
+            }
+        }
+    }
+```
+
+- The above is what loads the config/bundles.php file:
+
+```
+
+<?php
+
+return [
+    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
+    Symfony\Bundle\WebServerBundle\WebServerBundle::class => ['dev' => true],
+    Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle::class => ['all' => true],
+    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
+    Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true, 'test' => true],
+    Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
+    Symfony\Bundle\DebugBundle\DebugBundle::class => ['dev' => true, 'test' => true],
+    Knp\Bundle\MarkdownBundle\KnpMarkdownBundle::class => ['all' => true],
+];
+
+```
+
+- And check this out: some of the bundles are only loaded in specific environments.
+- Like, the WebServerBundle is only loaded in the dev environment
+- And the DebugBundle is similar. Most are loaded in all environments.
+
+- The other two important functions in src/Kernel.php are configureContainer (which basically means "configure services")
+and configureRoutes() 
+
+### Package File Loading:
+
+- UP to PAGE 27 in the docs
+
 
 
 ### Libraries to become more familiar with

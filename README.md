@@ -710,6 +710,35 @@ directory and then looks for an environment-specific subdirectory
 
 ### 7) Leveraging the prod Environment
 
+- Up until this point, we've always been in the 'dev' envioronment.
+- To change to prod, just modify the .env file 
+
+```
+APP_ENV=prod
+```
+
+- One big difference between the dev and prod environments is that in the prod environment, the internal Symfony 
+cache is not automatically rebuilt. That's because the prod environment is wired for speed.
+- In practice, this means that whenever you want to switch to the prod environment... like when deploying... 
+you need to run the ```bin/console cache:clear``` command
+- The bin/console file also reads the .env file, so it knows we're in the prod environment.
+- And now when we refresh the browser, we no longer see the web debug toolbar. 
+- And if you go to a fake page, you get a very boring error page (which can be customised). 
+- The point is, this is not a big development exception page anymore.
+
+###The dev and prod Cache Directories
+
+- Check out the var/cache directory. 
+- Each environment has its own cache directory: dev and prod. 
+- When you run cache:clear, it basically just clears the directory and recreates a few files.
+- But of course, when the first requests come in, the cache is cleared + so initial requests may be a little slower.
+- There is another command that can be run, ```bin/console cache:warmup```
+- This goes a step further and creates all of the cache files that Symfony will ever need. 
+- By running this command when you deploy, the first requests will be much faster.
+ 
+### 8) Creating Services!
+
+- Up to page 34 of the pdf
 
 ### Libraries to become more familiar with
 

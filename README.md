@@ -658,8 +658,57 @@ and configureRoutes()
 
 ### Package File Loading:
 
-- UP to PAGE 27 in the docs
+- Within configureContainer there is the following:
 
+```
+$loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');
+$loader->load($confDir.'/{packages}/'.$this->environment.'/**/*'.self::CONFIG_EXTS, 'glob');
+```
+
+- This loads all the files that live within the packages folder
+- Notice the second line in the above. It attempts to load files within e.g. the package/dev directory i.e. environment specific
+- Note that any overlapping config in the environment-specific files override those from the main files in packages/
+
+- Note that within the packages directory, the names of the files are not important...at all. 
+- One could be called hal9000.yaml and not change a thing. 
+- The important part is the root key, which tells Symfony which bundle is being configured.
+- Usually, the filename matches the root key... but, it doesn't have to. 
+- The organization of these files is subjective: it's meant to make as much sense as possible. 
+- The routing.yaml file actually configures something under the 'framework' key.
+- My big point is this: all of these files are really part of the same configuration system and, technically, their 
+contents could be copied into one giant file called my_big_old_config_file.yaml
+
+- Going back to the configureContainer function (within src/Kernel.php), the next few lines are:
+
+```
+$loader->load($confDir.'/{services}'.self::CONFIG_EXTS, 'glob');
+$loader->load($confDir.'/{services}_'.$this->environment.self::CONFIG_EXTS, 'glob');
+```
+
+- So the last files that are loaded are the services file + again, just like the packages above, you can have 
+environment-specific service files
+- More on that later
+
+### Route Loading:
+
+- Within the src/Kernel.php file, there is also a configureRoutes function:
+
+```
+protected function configureRoutes(RouteCollectionBuilder $routes)
+{
+    $confDir = $this->getProjectDir().'/config';
+    
+    $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
+    $routes->import($confDir.'/{routes}/'.$this->environment.'/**/*'.self::CONFIG_EXTS, '/', 'glob');
+    $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
+}
+```
+
+- It's pretty much the same as packages and services: it automatically loads everything from the config/routes 
+directory and then looks for an environment-specific subdirectory
+- So, all of the files inside config/ either configure services or configure routes. No biggie.
+
+### 7) Leveraging the prod Environment
 
 
 ### Libraries to become more familiar with

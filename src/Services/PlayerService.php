@@ -6,13 +6,25 @@ use Psr\Log\LoggerInterface;
 
 class PlayerService
 {
+    /** @var LoggerInterface */
+    private $logger;
+
+    /**
+     * PlayerService constructor.
+     *
+     * @param LoggerInterface $logger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * @param string $message
-     * @param LoggerInterface $logger
      */
     public function logSomeStuff(string $message)
     {
-        echo $message;
+        $this->logger->info('This is a log with a specific message: ' . $message);
     }
 
 }

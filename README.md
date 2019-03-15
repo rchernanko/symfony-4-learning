@@ -738,7 +738,171 @@ you need to run the ```bin/console cache:clear``` command
  
 ### 8) Creating Services!
 
-- Up to page 34 of the pdf
+- Have created a 'Service' directory within /src
+- Have added a PlayerService class
+- Because of our autowiring settings in config>services, the service class is automatically available for me
+to use in e.g. the PlayersController
+- When we run ```bin/console debug:autowiring```, we should see PlayerService available for us to use:
+
+```
+Autowirable Services
+   ====================
+   
+    The following classes & interfaces can be used as type-hints when autowiring:
+   
+    --------------------------------------------------------------------------
+     App\Controller\CacheController
+     App\Controller\PlayersController
+     App\Controller\TwigDemoController
+     App\Services\PlayerService
+```
+
+- So that's how you create services and ensure they are available for autowiring
+- Next, let's find out how we can access core services that CANNOT be autowired
+ 
+### 9) Using Non-Standard Services: Logger Channels
+
+- Within our PlayersController, we are using LoggerInterface as an argument in the action function.
+- When you run a ```bin/console debug:autowiring```, the output says that LoggerInterface is an alias to monolog.logger
+- 'monolog.logger' is the id of the service that is being passed to us
+- You can actually get a little bit more info about a service by running:
+```bin/console debug:container monolog.logger```
+
+- The results:
+
+```
+Information for Service "monolog.logger"
+========================================
+
+ ---------------- ----------------------------------------------------
+  Option           Value
+ ---------------- ----------------------------------------------------
+  Service ID       monolog.logger
+  Class            Symfony\Bridge\Monolog\Logger
+  Tags             -
+  Calls            useMicrosecondTimestamps, pushHandler, pushHandler
+  Public           no
+  Synthetic        no
+  Lazy             no
+  Shared           yes
+  Abstract         no
+  Autowired        no
+  Autoconfigured   no
+ ---------------- ----------------------------------------------------
+```
+
+- Anyway, we normally use debug:container to list all of the services in the container. But we can also get a filtered 
+list. Let's find all services that contain the word "log":
+
+```bin/console debug:container --show-private log```
+
+- The results:
+
+```
+ Select one of the following services to display its information:
+  [0 ] monolog.logger
+  [1 ] monolog.logger_prototype
+  [2 ] monolog.activation_strategy.not_found
+  [3 ] monolog.handler.fingers_crossed.error_level_activation_strategy
+  [4 ] monolog.formatter.chrome_php
+  [5 ] monolog.formatter.gelf_message
+  [6 ] monolog.formatter.html
+  [7 ] monolog.formatter.json
+  [8 ] monolog.formatter.line
+  [9 ] monolog.formatter.loggly
+  [10] monolog.formatter.normalizer
+  [11] monolog.formatter.scalar
+  [12] monolog.formatter.wildfire
+  [13] monolog.formatter.logstash
+  [14] monolog.processor.psr_log_message
+  [15] monolog.handler.main.not_found_strategy
+  [16] monolog.handler.main
+  [17] monolog.handler.nested
+  [18] monolog.handler.console
+  [19] monolog.logger.request
+  [20] monolog.logger.console
+  [21] monolog.logger.cache
+  [22] monolog.logger.php
+  [23] monolog.logger.router
+  [24] monolog.handler.null_internal
+  [25] logger
+  [26] Psr\Log\LoggerInterface
+```
+
+- There are about 6 services that we're really interested in: these 'monolog.logger.{something}' services
+e.g. monolog.logger.cache
+
+###Logging channels
+
+- Here's what's going on. Symfony uses a library called 'Monolog' for logging. And Monolog has a feature called channels, 
+which are kind of like categories. Instead of having just one logger, you can have many loggers. 
+- Each has a unique name - called a channel - and each can do totally different things with their logs - like write 
+them to different log files.
+- So, for example, if I hit the players controller action endpoint + check out the dev logs, I see the below:
+
+```
+[2019-03-15 08:32:09] request.INFO: Matched route "_wdt". {"route":"_wdt","route_parameters":{"_route":"_wdt","_controller":"web_profiler.controller.profiler::toolbarAction","token":"89ecc9"},"request_uri":"http://127.0.0.1:8000/_wdt/89ecc9","method":"GET"} []
+[2019-03-15 08:32:11] request.INFO: Matched route "app_players". {"route":"app_players","route_parameters":{"_route":"app_players","_controller":"App\\Controller\\PlayersController::getPlayerAction","name":"harry"},"request_uri":"http://127.0.0.1:8000/players/harry","method":"GET"} []
+[2019-03-15 08:32:11] app.INFO: Someone is calling the getPlayerAction endpoint [] []
+[2019-03-15 08:32:11] app.INFO: This is a log with a specific message: checking that the autowiring for player service works [] []
+```
+
+- Here, we can see 2 channels - request and app.
+- The 'app' ones are the logs I've added myself within the PlayersController and PlayerService.
+- So it would appear that the main logger uses a channel called 'app'. 
+- But other parts of Symfony are using other channels, like 'request' or 'event'.
+- If you look in config/packages/dev/monolog.yaml, you can see different behavior based on the channel.
+- Here's what the monolog.yaml file (within the dev directory) currently looks like:
+
+```
+monolog:
+    handlers:
+        main:
+            type: stream
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: debug
+            channels: ["!event"]
+            
+        # uncomment to get logging in your browser
+        # you may have to allow bigger header sizes in your Web server configuration
+        
+        #firephp:
+        #    type: firephp
+        #    level: info
+        
+        #chromephp:
+        #    type: chromephp
+        #    level: info
+            
+        console:
+            type:   console
+            process_psr_3_messages: false
+            channels: ["!event", "!doctrine", "!console"]
+
+```
+
+- For example, most logs are saved to a dev.log file. 
+- But, thanks to this channels: ["!event"] config, which means "not event", anything logged to the "event" logger is not saved to this file.
+- This is a really cool feature. But mostly... I'm telling you about this because it's a great example of a new problem: 
+how could we access one of these other Logger objects? I mean, when we use the LoggerInterface type-hint, it gives us 
+the main logger. But what if we need a different Logger, like the "event" channel logger?
+
+###Creating a new Logger Channel
+
+- Let's create a new channel called 'players'.
+- Because I want this channel to be available in ALL environments, I can't simply just add the config to the monolog.yaml
+file within the 'dev' directory.
+- Instead, I will create a new file at the root level (within config>packages), entitled 'monolog.yaml', and add a new channel:
+
+```
+monolog:
+    channels: ['players']
+```
+
+- Now, when I run a ```bin/console debug:container --show-private log```, I can see my new ```monolog.logger.players``` channel
+
+- UP TO PAGE 45 
+
 
 ### Libraries to become more familiar with
 

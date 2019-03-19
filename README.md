@@ -900,8 +900,190 @@ monolog:
 ```
 
 - Now, when I run a ```bin/console debug:container --show-private log```, I can see my new ```monolog.logger.players``` channel
+- So now let's go back to the 'dev' monolog.yaml file and the new 'players' handler (underneath the main one):
 
-- UP TO PAGE 45 
+```
+monolog:
+    handlers:
+        main:
+            type: stream
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: debug
+            channels: ["!event"]
+        players:
+            type: stream
+            path: "%kernel.logs_dir%/players.log"
+            level: debug
+            channels: ["players"]      
+```
+
+- In the above 'players handler', we are only logging the 'players' channel.
+- Ok! If you go to your browser now and refresh... it does work. But if you check the logs, we are - of course - 
+still logging to the app channel Logger. Yep, there's no players.log file yet.
+
+###Fetching a Non-Standard Service
+
+- So how can we tell Symfony to not pass us the "main" logger, but instead to pass us the monolog.logger.players service? 
+- This is our first case where autowiring doesn't work.
+- That's no problem: when autowiring doesn't do what you want, just correct it! 
+- Open config/services.yaml. Ignore all of the configuration on top for now. But notice that we're under a key called services. 
+- Add something like this:
+
+```
+    App\Services\PlayerService:
+        arguments:
+            $logger: '@monolog.logger.players'
+```
+  
+- Try it again! It works! Check out the var/log directory... boom! We have a players.log file!
+- Next, I'll show you an even cooler way to configure this. And we'll learn more about what all this config in services.yaml does.
+
+### 10) services.yaml + the Amazing bind
+
+- When Symfony loads, it needs to figure out all of the services that should be in the container. 
+- All of that happens in services.yaml under the services key.
+
+### Understanding _defaults:
+
+- This is a special key that sets default config values that should be applied to ALL services that are registered in THIS FILE
+- For example, `autowire: true` means that any services registered in this file should have the autowiring behaviour turned on.
+- You can actually set autowiring to false if you want. In fact, you could set autowiring to false on just one service to override these defaults:
+
+```
+services:
+    _default: 
+        autowire: true
+    #
+    App\Service\PlayerService:
+        autowire: false
+
+```
+
+- The `autoconfigure` option is something we'll talk about during the last chapter of this course - but it's not too important:
+- We'll also talk about `public: false` even sooner
+- The point is: we've established a few default values for any services that THIS FILE registers.
+
+### Service Auto-registration
+
+- The real magic comes with this `App\` entry:
+
+```
+App\:
+        resource: '../src/*'
+        exclude: '../src/{Entity,Migrations,Tests,Kernel.php}'
+```
+
+- This says - "make ALL classes inside src/ available as services in the container"
+- Reminder - you can see all available services when running a ```bin/console debug:autowiring```
+- And any future classes will also show up here, automatically.
+- Does that mean that all of our classes are instantiated on every single request? Because, that would be super wasteful!
+- No: this config simply tells the container to be aware of these classes. 
+- But services are never instantiated until - and unless - someone asks for them. 
+- So, if we didn't ask for our PlayerService , it would never be instantiated on that request. Winning!
+
+### Services are only Instantiated Once
+
+- Oh, and one important thing: each service in the container is instantiated a maximum of once per request. 
+- If multiple parts of our code ask for the PlayerService, it will be created just once, and the same instance will be 
+passed each time
+
+### The services 'exclude' key
+
+```
+App\:
+        resource: '../src/*'
+        exclude: '../src/{Entity,Migrations,Tests,Kernel.php}'
+```
+
+- The `exclude` key is not too important: if you know that some classes don't need to be in the container, you can 
+exclude them for a small performance boost in the dev environment only.
+
+### App\Controller in services.yaml
+
+```
+ App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+```
+
+- The classes in `Controller/` are already registered as services thanks to the `App\` section of the services.yaml file
+- The `App\Controller` section just adds a special tag to controllers... which you just shouldn't worry about. Honestly.
+
+###The Amazing Bind
+
+- Thanks to all of this config, we don't need to spend much time in this config file! 
+- We only need to configure the "special cases" - like we did for PlayerService (and the Player logger):
+
+```
+    App\Services\PlayerService:
+        arguments:
+            $logger: '@monolog.logger.players'
+```
+
+- And actually.. there's a much cooler way to do the above! 
+- Copy the service id and delete the config (I will mark as commented in my codebase)
+- Now at this point (after commenting out the code in the services.yaml), if we didn't do anything else, 
+Symfony would once-again pass us the "main" Logger object.
+- So let's change that. Add a `bind` key beneath `_defaults`:
+
+```
+services:
+    _defaults:
+        ...
+        bind:
+          $playersLogger: '@monolog.logger.players'
+```
+
+- Copy that argument name (`$playersLogger`) open PlayerService, and rename the argument from $logger to $playersLogger. 
+- So from this:
+
+```
+class PlayerService
+{
+    /** @var LoggerInterface */
+    private $logger;
+
+    /**
+     * PlayerService constructor.
+     *
+     * @param LoggerInterface $playersLogger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+```
+
+- To this:
+
+```
+class PlayerService
+{
+    /** @var LoggerInterface */
+    private $logger;
+
+    /**
+     * PlayerService constructor.
+     *
+     * @param LoggerInterface $playersLogger
+     */
+    public function __construct(LoggerInterface $playersLogger)
+    {
+        $this->logger = $playersLogger;
+    }
+```
+
+- And now let's try to refresh the browser + hey presto, something is still being added to the players.log.
+- I.e. the `bind` worked!
+- `bind` says - "If you find any argument named $playersLogger, pass this service to it".
+- And because we added it to `_defaults`, it applies to all our services. 
+- Instead of configuring our services one-by-one, we're creating project-wide conventions. 
+Next time you need this logger? Yep, just name it $playersLogger and keep coding.
+
+### 11) Config Parameters
+
+UP TO PAGE 52
+
 
 
 ### Libraries to become more familiar with

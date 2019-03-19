@@ -12,11 +12,11 @@ class PlayerService
     /**
      * PlayerService constructor.
      *
-     * @param LoggerInterface $logger
+     * @param LoggerInterface $playersLogger
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $playersLogger)
     {
-        $this->logger = $logger;
+        $this->logger = $playersLogger;
     }
 
     /**

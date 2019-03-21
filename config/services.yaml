@@ -1,6 +1,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+  #added the below in chapter 11
+  test_parameter: hello_i_am_a_test_parameter
 
 services:
     # default configuration for services in *this* file
@@ -12,6 +14,7 @@ services:
                             # The best practice is to be explicit about your dependencies anyway.
         bind:
           $playersLogger: '@monolog.logger.players'
+          $testParameter: '%test_parameter%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

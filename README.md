@@ -1082,10 +1082,133 @@ Next time you need this logger? Yep, just name it $playersLogger and keep coding
 
 ### 11) Config Parameters
 
-UP TO PAGE 52
+- First thing - remember that ALL of the files within the config directory are loaded into the container  
+- The ordering is important: files in config/packages are loaded first, then anything in config/packages/dev, and last, 
+services.yaml. That means that the config in services.yaml is overriding our dev config file!
+- So let's create a parameter in the services.yaml file:
+
+```
+parameters:
+  test_parameter: hello_i_am_a_test_parameter
+```
+
+- And I've added this to the PlayerService class
+
+```
+    /**
+     * PlayerService constructor.
+     *
+     * @param LoggerInterface $playersLogger
+     * @param string $testParameter
+     */
+    public function __construct(LoggerInterface $playersLogger, string $testParameter)
+    {
+        $this->logger = $playersLogger;
+        $this->testParameter = $testParameter;
+        
+        $this->logger->info('Logging the test parameter: '. $this->testParameter);
+    }
+```
+
+- Now, '$testParameter' is an argument that CANNOT be autowired
+- In fact, if I launch the web server locally (in dev environment) + try to hit an endpoint, I get the message below:
+
+```Cannot resolve argument $playerService of "App\Controller\PlayersController::getPlayerAction()": Cannot autowire 
+service "App\Services\PlayerService": argument "$testParameter" of method "__construct()" is type-hinted "string", 
+you should configure its value explicitly.
+``` 
+
+- This is the other main situation when autowiring does not work.
+- But, just like before, it's no problem! If Symfony can't figure out what value to pass to an argument, just tell it! 
+- In services.yaml, we could configure the argument for just this one service. But that's no fun! Add another global 
+bind instead: $testParameter and just hardcode it to 'hello_i_am_a_test_parameter' for now.
+
+```
+bind:
+    $playersLogger: '@monolog.logger.players'
+    $testParameter: '%test_parameter%'
+```
+
+- Now, when we call the PlayerService constructor, the $testParameter value is added to the players.log file
+
+### Built-in kernel.* Parameters
+
+- In your terminal, the `debug:container` command normally lists services. 
+- But if you pass --parameters, well, you can guess what it prints:
+- So `bin/console debug:container --parameters`: 
+
+```
+Symfony Container Parameters
+============================
+
+ ------------------------------------------------ --------------------------------------------------------------------------------------------------
+  Parameter                                        Value
+ ------------------------------------------------ --------------------------------------------------------------------------------------------------
+  console.command.ids                              []
+  container.autowiring.strict_mode                 true
+  container.dumper.inline_class_loader             true
+  data_collector.templates                         {"data_collector.request":["request","@WebProfiler\/Collecto...
+  debug.container.dump                             /Users/richardchernanko/Desktop/symfony-4-learning/var/cache/dev/srcDevDebugProjectContainer.xml
+  debug.error_handler.throw_at                     -1
+  debug.file_link_format                           null
+  env(VAR_DUMPER_SERVER)                           127.0.0.1:9912
+  fragment.path                                    /_fragment
+  fragment.renderer.hinclude.global_template
+  kernel.bundles                                   {"FrameworkBundle":"Symfony\\Bundle\\FrameworkBundle\\Framew...
+  kernel.bundles_metadata                          {"FrameworkBundle":{"path":"\/Users\/richardchernanko\/Deskt...
+  kernel.cache_dir                                 /Users/richardchernanko/Desktop/symfony-4-learning/var/cache/dev
+  kernel.charset                                   UTF-8
+  kernel.container_class                           srcDevDebugProjectContainer
+  kernel.debug                                     true
+  kernel.default_locale                            en
+  kernel.environment                               dev
+  kernel.http_method_override                      true
+  kernel.logs_dir                                  /Users/richardchernanko/Desktop/symfony-4-learning/var/log
+  kernel.name                                      src
+  kernel.project_dir                               /Users/richardchernanko/Desktop/symfony-4-learning
+  kernel.root_dir                                  /Users/richardchernanko/Desktop/symfony-4-learning/src
+  kernel.secret                                    %env(APP_SECRET)%
+  kernel.trusted_hosts                             []
+  monolog.handlers_to_channels                     {"monolog.handler.console":{"type":"exclusive","elements":["...
+  monolog.swift_mailer.handlers                    []
+  monolog.use_microseconds                         true
+  profiler.storage.dsn                             file:/Users/richardchernanko/Desktop/symfony-4-learning/var/cache/dev/profiler
+  profiler_listener.only_exceptions                false
+  profiler_listener.only_master_requests           false
+  request_listener.http_port                       80
+  request_listener.https_port                      443
+  router.cache_class_prefix                        srcDevDebugProjectContainer
+  router.request_context.base_url
+  router.request_context.host                      localhost
+  router.request_context.scheme                    http
+  router.resource                                  kernel::loadRoutes
+  session.metadata.storage_key                     _sf2_meta
+  session.metadata.update_threshold                0
+  session.save_path                                /Users/richardchernanko/Desktop/symfony-4-learning/var/cache/dev/sessions
+  session.storage.options                          {"cache_limiter":0,"cookie_httponly":true,"gc_probability":1...
+  templating.helper.code.file_link_format          null
+  test_parameter                                   hello_i_am_a_test_parameter
+  twig.default_path                                /Users/richardchernanko/Desktop/symfony-4-learning/templates
+  twig.exception_listener.controller               twig.controller.exception::showAction
+  twig.form.resources                              ["form_div_layout.html.twig"]
+  web_profiler.debug_toolbar.intercept_redirects   false
+  web_profiler.debug_toolbar.mode                  2
+ ------------------------------------------------ -------------------------------------------------------------
+```
+
+### 12) Constructors for your Controller
 
 
 
+
+
+- Just like with services, most of these are internal values you don't care about. But, there are several that are 
+useful: they start with `kernel.`, like `kernel.debug`. That parameter is true most of the time, but is false in the 
+prod environment.
+- Ok, it's time to talk a little bit more about controllers. It turns out, they're services too!
+
+
+  
 ### Libraries to become more familiar with
 
 - sec-check (sensiolabs/security-checker) plugin.

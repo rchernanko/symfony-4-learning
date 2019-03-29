@@ -1196,19 +1196,138 @@ Symfony Container Parameters
  ------------------------------------------------ -------------------------------------------------------------
 ```
 
-### 12) Constructors for your Controller
-
-
-
-
-
 - Just like with services, most of these are internal values you don't care about. But, there are several that are 
 useful: they start with `kernel.`, like `kernel.debug`. That parameter is true most of the time, but is false in the 
 prod environment.
 - Ok, it's time to talk a little bit more about controllers. It turns out, they're services too!
 
+### 12) Constructors for your Controller
 
+- Autowiring works in exactly two places. 
+- 1) in controller actions + 2) the __construct() method of services 
+- He hints that there are actually a few other places too (which we will find out later no doubt)
+- In earlier versions of Symfony 4 (which this documentation is based off), you couldn't use 'bound' values from the 
+services.yaml in controller actions. Now you can...
+
+### 13) Installing Bundles with "Average" Docs
+
+- Would've made notes on this but composer require gave me some issues on my personal laptop environment.
+- Anyway, is quite a nice little video on how to use bundles that aren't up to date with Symfony 4 (i.e. they don't have recipes).
+- He downloaded the https://github.com/nexylan/slack-bundle via composer and had to do some manual configurations. 
+- The key thing to note is that he added a new config file within 'config/packages' and added the following config:
+
+```
+nexy_slack:
+
+    endpoint:             <his slack endpoint>
+```
   
+- He then ran a bin/console cache:clear (to check that he'd configured it all properly) + all was fine 
+- However, when he checked to see whether the 'nexy_lan' service was available to use (via autowiring), it wasn't listed... 
+ (`bin/console debug:autowiring`)
+- So while the bundle technically works with Symfony 4...it hasn't been fully updated. And so, it doesn't expose any 
+services for autowiring (at the time of writing)! Right now, there is no way to autowire that 'nexy_slack.client' service.
+- So, now we need to learn a little bit more about public versus private services. And then take control of things with an autowiring alias!
+
+### 14) Autowiring Aliases
+
+- The way we coded in Symfony 3 was a bit different than Symfony 4. 
+- And... well... we need to learn just a little bit about the Symfony 3 way. Why? Because, when you find bundles with 
+outdated docs, or old StackOverflow answers, I want you to be able to translate that into Symfony 4.
+
+### Public Versus Private Services
+
+- In Symfony 3, services were defined as public. This means that you could use a `$this->get()` shortcut method in your 
+controller to fetch a service by its id. Or, if you had the container object itself - yep, that's totally possible - you 
+could say `$container->get()` to do the same thing.
+- But in Symfony 4, most services are private. What does that mean? Very simply, when a service is private, you cannot 
+use the $this->get() shortcut to fetch it. At first, it might seem like we're just making life more difficult! But 
+actually, Symfony 4 simply has a new philosophy. 
+- Open `services.yaml` and, below `_defaults`, check out the `public: false`) config
+- Thanks to this, any service that we create is private. And so, we cannot fetch our services with `$this->get()` 
+- Increasingly, more and more third-party bundles are also making their services private.
+- Making services private encourages us to use dependency injection instead (which is a good code practice)
+
+### Fetching a Service by id
+
+- He ran a `bin/console debug:container nexy_slack.client` and saw that the class for this object is `Nexy\Slack\Client`
+- So the class is available for us to use, just not via the autowiring (just yet anyway :-)) - remember it wasn't found
+when we ran a `bin/console debug:autowiring`
+- He tried to use it via autowiring but it didn't work.
+- When a service is not available to us via autowiring, we cannot use it in actions.
+- But there's a way around this...
+- He opened `services.yaml`, and added under `bind`:
+
+```
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+              
+        bind:
+          $playersLogger: '@monolog.logger.players'
+          $testParameter: '%test_parameter%'
+          Nexy\Slack\Client: '@nexy_slack_client' 
+```
+ 
+- That's it! Bind has two super-powers: you can bind by the argument name OR you can bind by a class or interface. 
+- We're defining our own rules for autowiring!
+- So now, when he uses `Client` in a service or controller action (with a `use` import for `Nexy\Slack\Client`), it works!
+
+### Autowiring Aliases
+
+- But he then made one small tweak. 
+In `services.yaml`, instead of putting the `Nexy\Slack\Client` beneath `_defaults` and `bind`, he undented it so that 
+it's at the root of services (i.e. doesn't fall under `_defaults` or `bind`):
+
+```
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+              
+        bind:
+          $playersLogger: '@monolog.logger.players'
+          $testParameter: '%test_parameter%'
+    
+    Nexy\Slack\Client: '@nexy_slack_client' 
+```
+
+- Why do this?
+- The difference is subtle. Config beneath `_defaults` only affects services that are added in THIS file. 
+- But when you put this same config directly under `services`, it will affect all services in the system. 
+- In practice... that makes no difference: only our code uses autowiring, no-one else is using it...
+- But the biggest reason he does this is because, now, when he runs `bin/console debug:autowriting`...
+the Slack Client service now appears in the list!!!
+
+```
+Nexy/Slack/Client
+    alias to nexy_slack.client
+```
+
+- When it's under `bind`, it won't show up here.
+
+###  About Autowiring Logic
+
+- But... this trick also shows us a bit more about how autowiring works. 
+- By putting this config directly under `services`, we're creating a new service in the container with the id `Nexy\Slack\Client`. 
+- But this is not a real service, it's just an "alias" - a "shortcut" - to fetch the existing `nexy_slack.client` service.
+- Here's the important question: when an argument to a service hasn't been configured under bind or arguments, how does 
+the autowiring figure out which service to pass? e.g. now that we've used `Client` in a controller action, how does the 
+autowiring know which service to pass in? 
+- The answer is super simple: the autowiring just looks for a service whose id exactly matches the type-hint. It says 
+"hey container, is there a service with the id Nexy/Slack/Client'..."ok there is, let's use this then"
+- Yep, now that there is a service whose id is Nexy\Slack/Client, we can use that class as a type-hint. 
+- That's also why our classes - like PlayerService can be autowired: each class in `src/` is auto-registered as a service 
+and given an id that matches the class name.
+
+### 15) Environment Variables
+
+UP TO PAGE 67
+
+
 ### Libraries to become more familiar with
 
 - sec-check (sensiolabs/security-checker) plugin.

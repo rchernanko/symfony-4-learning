@@ -5,9 +5,10 @@ namespace App\Controller;
 use App\Services\PlayerService;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
-class PlayersController
+class PlayersController extends AbstractController
 {
     /**
      * @Route("/players/{name}", name="app_players", methods={"GET"})
@@ -15,11 +16,15 @@ class PlayersController
      * @param $name
      * @param LoggerInterface $logger
      * @param PlayerService $playerService
+     * @param string $testParameter
      *
      * @return Response
      */
-    public function getPlayerAction($name, LoggerInterface $logger, PlayerService $playerService)
+    public function getPlayerAction($name, LoggerInterface $logger, PlayerService $playerService, string $testParameter)
     {
+        //Checking that a 'bound' parameter (from within the services.yaml file) can be accessed in a controller action via autowiring
+        $logger->info("test parameter is: " . $testParameter);
+
         //The line below will now get added to var/log/dev.log
         $logger->info('Someone is calling the getPlayerAction endpoint');
 

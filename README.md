@@ -1325,8 +1325,60 @@ and given an id that matches the class name.
 
 ### 15) Environment Variables
 
-UP TO PAGE 67
+- How to create environment variables (and not have to hardcode passwords in the .env file)?
+- In busuu, we used puppet and all the variables were then found in the parameters.yml file...
+- Symfony recommends you access these environment variables via `getenv()` function or `$_SERVER`
+- In fact, within the `public/index.php` file, this is what happens with `$_SERVER['APP_ENV']`
 
+```if (!isset($_SERVER['APP_ENV'])) {```
+
+### How to add a new env variable
+
+- Symfony has a special syntax that can be used in config files to read from environment variables. `%env()%`.
+- So in the services.yml, I've created a new parameter + have bound it within `_defaults>bind`:
+
+```
+parameters:
+  test_environment_variable: '%env(TEST_ENVIRONMENT_PARAM)%'
+
+services:
+    _defaults:
+        ...
+        bind:
+          $testEnvironmentVariable: '%test_environment_variable%'
+```
+
+- And then within the PlayerService constructor, I have injected $testEnvironmentVariable:
+
+```
+public function __construct(LoggerInterface $playersLogger, string $testParameter, string $testEnvironmentVariable) {...}
+```
+
+- When I launch the web browser and attempt to hit this endpoint, I get an error message:
+
+```Environment variable not found: "TEST_ENVIRONMENT_PARAM"```
+
+### Setting Environment Variables in .env
+
+- So I've added into the .env file:
+
+```TEST_ENVIRONMENT_PARAM=hi_i_am_the_test_environment_parameter```
+
+- And when I refresh the browser (to hit the endpoint again), the error has gone and if I 'dump' the $testEnvironmentVariable,
+I can see the correct value
+
+### Updating .env.dist
+
+- As with busuu (and the parameters.dist file), I also need to add the variable to the env.dist file and strip out any
+sensitive values
+
+```TEST_ENVIRONMENT_PARAM=dummy_env_variable```
+
+### Other way to access env variables:
+
+- I can use:
+
+```getenv('TEST_ENVIRONMENT_PARAM');```
 
 ### Libraries to become more familiar with
 

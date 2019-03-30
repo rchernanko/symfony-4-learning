@@ -16,8 +16,9 @@ class PlayerService
      *
      * @param LoggerInterface $playersLogger
      * @param string $testParameter
+     * @param string $testEnvironmentVariable
      */
-    public function __construct(LoggerInterface $playersLogger, string $testParameter)
+    public function __construct(LoggerInterface $playersLogger, string $testParameter, string $testEnvironmentVariable)
     {
         $this->logger = $playersLogger;
         $this->testParameter = $testParameter;

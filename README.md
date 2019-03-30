@@ -1380,6 +1380,61 @@ sensitive values
 
 ```getenv('TEST_ENVIRONMENT_PARAM');```
 
+### Command to see all environment variables available:
+
+```php bin/console about```
+
+returns...
+
+```
+ ------------------------ ---------------------------------------- 
+  Symfony                                                          
+ ------------------------ ---------------------------------------- 
+  Version                  4.1.3                                   
+  End of maintenance       01/2019 Expired                         
+  End of life              07/2019                                 
+ ------------------------ ---------------------------------------- 
+  Kernel                                                           
+ ------------------------ ---------------------------------------- 
+  Type                     App\Kernel                              
+  Name                     src                                     
+  Environment              dev                                     
+  Debug                    true                                    
+  Charset                  UTF-8                                   
+  Root directory           ./src                                   
+  Cache directory          ./var/cache/dev (6.0 MiB)               
+  Log directory            ./var/log (70 KiB)                      
+ ------------------------ ---------------------------------------- 
+  PHP                                                              
+ ------------------------ ---------------------------------------- 
+  Version                  7.2.16                                  
+  Architecture             64 bits                                 
+  Intl locale              en_US_POSIX                             
+  Timezone                 UTC (2019-03-30T13:15:40+00:00)         
+  OPcache                  true                                    
+  APCu                     false                                   
+  Xdebug                   true                                    
+ ------------------------ ---------------------------------------- 
+  Environment (.env)                                               
+ ------------------------ ---------------------------------------- 
+  APP_ENV                  dev                                     
+  APP_SECRET               e494aff7e9f6d9329f05d06bc1a0a210        
+  TEST_ENVIRONMENT_PARAM   hi_i_am_the_test_environment_parameter  
+ ------------------------ ---------------------------------------- 
+```
+
+### 16) Env Var Tricks & on Production
+
+- Not going to make notes on this
+
+### 17) He builds a logger trait
+
+- Not going to make notes on this
+
+### 18) Maker bundle
+
+UP TO PAGE 80
+
 ### Libraries to become more familiar with
 
 - sec-check (sensiolabs/security-checker) plugin.

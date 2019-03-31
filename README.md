@@ -2,6 +2,7 @@
 
 - First series is https://knpuniversity.com/screencast/symfony
 - Second series is https://knpuniversity.com/screencast/symfony-fundamentals
+- I have added the videos in my personal google drive BUT the documentation can be found within the `docs` directory 
 
 ### FIRST TUTORIAL SERIES
 - Stellar Development with Symfony 4

@@ -1431,9 +1431,139 @@ returns...
 
 - Not going to make notes on this
 
-### 18) Maker bundle
+### 18) MakerBundle
 
-UP TO PAGE 80
+- A bundle that will make my life easier
+- `composer require maker --dev`
+- 'maker' is a Flex alias for symfony/maker-bundle. And, in this case, "make" means - "make your life easier by generating code
+- This gives us new `bin/console` commands. When we run `bin/console` we now have about 10-15 new commands:
+
+```
+  make:auth                   Creates a Guard authenticator of different flavors
+  make:command                Creates a new console command class
+  make:controller             Creates a new controller class
+  make:crud                   Creates CRUD for Doctrine entity class
+  make:entity                 Creates or updates a Doctrine entity class, and optionally an API Platform resource
+  make:fixtures               Creates a new class to load Doctrine fixtures
+  make:form                   Creates a new form class
+  make:functional-test        Creates a new functional test class
+  make:migration              Creates a new migration based on database changes
+  make:registration-form      Creates a new registration form system
+  make:serializer:encoder     Creates a new serializer encoder class
+  make:serializer:normalizer  Creates a new serializer normalizer class
+  make:subscriber             Creates a new event subscriber class
+  make:twig-extension         Creates a new Twig extension class
+  make:unit-test              Creates a new unit test class
+  make:user                   Creates a new security user class
+  make:validator              Creates a new validator and constraint class
+  make:voter                  Creates a new security voter class
+```
+
+### Generating a new command:
+
+```
+
+bin/console make:command
+
+ Choose a command name (e.g. app:agreeable-elephant):
+ > richard:test-command
+
+ created: src/Command/RichardTestCommand.php
+
+  Success!
+
+ Next: open your new command class and customize it!
+ Find the documentation at https://symfony.com/doc/current/console.html
+```
+
+- And now I can see the richard:test-command listed when I run a `bin/console`
+
+### 19) Fun with Commands
+
+- Have made a load of changes in the RichardTestCommand so that it takes arguments and options
+
+### Printing things:
+
+- One thing that is new is the `SymfonyStyle` object for input and output.
+- This has loads of shortcut methods that give you access to the input and also print the output as e.g. json, a table, a list etc
+- e.g. to print a list of things, use the `listing` function `$io->listing()` and just pass in an array
+- Results in something like this:
+
+```
+ bin/console richard:test-command 1
+
+ * 1
+
+```
+
+- For json, use `$io->write()` + then `json_encode`:
+
+```
+ bin/console richard:test-command 1 --format=json
+
+ {"number":"1"}
+
+```
+
+### Printing a table
+
+- Have just created a foreach loop in the command:
+
+```
+ switch ($input->getOption('format')) {
+            case 'text':
+
+                $players = [
+                    'harry kane' => 'tottenham hotspurs',
+                    'eden hazard' => 'chelsea',
+                    'aaron ramsey' => 'juventus'
+                ];
+
+                $rows = [];
+                foreach ($players as $key => $val) {
+                    $rows[] = [$key, $val];
+                }
+
+                $io->table(['Player', 'Team'], $rows);
+
+                break;
+
+PRINTS:
+
+bin/console richard:test-command 1
+
+ -------------- --------------------
+  Player         Team
+ -------------- --------------------
+  harry kane     tottenham hotspurs
+  eden hazard    chelsea
+  aaron ramsey   juventus
+ -------------- --------------------
+ 
+```
+
+- And if I want to other services in my Command, I can via a `__construct` and autowiring.
+- One thing to note with commands though, the `__construct` must call `parent::__construct`. Commands are a rare case 
+where there is a parent constructor, e.g:
+
+```
+    /**
+     * @var PlayerService
+     */
+    private $playerService;
+
+    /**
+     * RichardTestCommand constructor.
+     *
+     * @param PlayerService $playerService
+     * @param string|null $name
+     */
+    public function __construct(PlayerService $playerService, ?string $name = null)
+    {
+        parent::__construct($name);
+        $this->playerService = $playerService;
+    }
+``` 
 
 ### Libraries to become more familiar with
 
